@@ -18,7 +18,7 @@
 		.bhg table {width: 100%; font-size: 1em; border-collapse: collapse; table-layout: fixed; border-spacing: 0; position: relative;}
 		.bhg table td, .bhg table th {border-style: solid; border-width: 1px; border-color: #ddd; padding: 0; vertical-align: top; white-space: nowrap;}
 
-		.bhg-container {width: 100%; height: 400px; position: relative;}
+		.bhg-container {width: 600px; height: 400px; position: relative;}
 		.bhg-scrollpane, .bhg-scrollpane-inner {overflow: hidden; position: relative;}
 		.bhg-scrollpane {z-index: 1;}
 		.bhg-scrollpane-inner {min-height: 100%; margin:0px; }
@@ -199,16 +199,96 @@
 					</tr>
 				</thead>
 			</table>
+		</div>
+		<div>
+			<button id="add-cols">Add column</button>
+		</div>
+
 
 		<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>		
 		<script type="text/javascript">
+		var col_width = 42;
+		var last_horizonal_position = 0;
+
+		function add_first_column() {
+			// Used to add columns when scrolling to the left (back in time)
+			console.log("add column at the begin");
+
+			// Add column a the end
+			var n = parseInt($("table.bhg-schedule-header tr:first th:first-child div").text()) - 1;
+			$("table.bhg-schedule-header tr").prepend("<th><div>" + n + "</div></th>");
+			$("table.bhg-bg-grid tr").prepend("<td><div></div></td>");
+
+			// Remove the first colum
+			$("table.bhg-schedule-header tr th:last").remove();
+			$("table.bhg-bg-grid tr td:last").remove();
+
+			// Maintain the scroll position
+			var l = $(".bhg-scroll-x-y").scrollLeft()
+			$(".bhg-scroll-x-y").scrollLeft(l+col_width);			// Cell width
+			$(".bhg-scroll-x").scrollLeft(l+col_width);
+		}
+
+		function add_last_column() {
+			// Used to add columns when scrolling to the right (forward in time)
+			console.log("add column at the end");
+
+			// Add column a the end
+			var n = parseInt($("table.bhg-schedule-header tr:first th:last div").text()) + 1;
+			$("table.bhg-schedule-header tr").append("<th><div>" + n + "</div></th>");
+			$("table.bhg-bg-grid tr").append("<td><div></div></td>");
+
+			// Remove the first colum
+			$("table.bhg-schedule-header tr th:first-child").remove();
+			$("table.bhg-bg-grid tr td:first-child").remove();
+
+			// Maintain the scroll position
+			var l = $(".bhg-scroll-x-y").scrollLeft()
+			$(".bhg-scroll-x-y").scrollLeft(l-col_width);			// Cell width
+			$(".bhg-scroll-x").scrollLeft(l-col_width);
+		}
+
+
+
 		$(function() {
 			$(".bhg-scroll-x-y").scroll(function () {
 				// alert('scroll');
+				// console.log("Scroll");
+				var t = $(".bhg-scroll-x-y").scrollTop();
+				var l = $(".bhg-scroll-x-y").scrollLeft();
 
+				console.log("scroll - top: " + t + ", left: " + l);
+
+				// Scroll the related panes
 				$(".bhg-scroll-y").scrollTop($(".bhg-scroll-x-y").scrollTop());
 				$(".bhg-scroll-x").scrollLeft($(".bhg-scroll-x-y").scrollLeft());
+
+				if (last_horizonal_position < l && l > 6 * col_width) {				// Must have space between left and right scrolling
+					// scroll right
+					add_last_column();
+				}
+				else if (last_horizonal_position > l && l < 3 * col_width) {
+					// Scroll left
+					add_first_column();
+				}
+				last_horizonal_position = l;
+
+
+				// When left > offset add columns at the end
+				// if ( l > 3 * col_width) {
+				// 	add_last_column();
+
+				// 	console.log(" - next left: " + $(".bhg-scroll-x-y").scrollLeft());
+				// }
+
+
+
 			});
+
+			$("#add-cols").click(function() {
+				add_first_column();
+			})
+
 		});
 		</script>
 	</body>
