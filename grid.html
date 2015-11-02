@@ -54,7 +54,7 @@
 
 	<body>
 		<p>Grid</p>
-		<div class="bhg bhg-container">
+		<div id='sample' class="bhg bhg-container">
 			<table>
 				<thead class="bhg-head" >
 					<tr style="height: 40px;">
@@ -201,52 +201,6 @@
 			</table>
 		</div>
 
-<!-- 		<div>
-			<table>
-				<thead>
-					<tr>
-						<td colspan="4"><div>mon<div></td>
-						<td colspan="4"><div>tue<div></td>
-						<td colspan="4"><div>wed<div></td>
-						<td colspan="4"><div>thu<div></td>
-						<td colspan="4"><div>fri<div></td>
-						<td colspan="4"><div>sat<div></td>
-						<td colspan="4"><div>sun<div></td>
-					</tr>
-					<tr>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-						<td><div>0:00</div></td>
-						<td><div>6:00</div></td>
-						<td><div>12:00</div></td>
-						<td><div>18:00</div></td>
-					</tr>
-				</thead>
-			</table>
-		</div>
- -->
 		<div id="the-grid"></div>
 
 <!-- 		<div>
@@ -260,7 +214,7 @@
 
 		(function($) {
 			var defaults = {
-				numberOfDays: 3,
+				numberOfDays: 7,
 				numberOfSlotsPerDay: 2
 			};
 
@@ -278,12 +232,23 @@
 				var content;
 
 				// Render
-				function renderPane(scroll, width, height, content) {
-					var paneInner = $('<div></div>').addClass('bhg-page-inner');
+				function renderPane(scroll, width, height, background, content) {
+					var paneInner = $('<div></div>').addClass('bhg-pane-inner');
 					if (width) {
 						paneInner.css('width', width + 'px');
 					}
 					paneInner.append($('<div></div>').addClass('bhg-content').append(content));
+
+					if (background) {
+						// var bg = $('<div></div>').addClass('bhg-bg');
+						// var table = $('<table></table>');
+						var tr = $('<tr></tr>')
+						var cols = g.options.numberOfDays * g.options.numberOfSlotsPerDay;
+						for (i=0; i<cols; i++) {
+							tr.append($('<td><div></div></td>'));
+						}
+						paneInner.append($('<div></div>').addClass('bhg-bg').append( $('<table></table>').addClass('bhg-bg-grid').append(tr)));
+					}
 
 					var paneScroll = $('<div></div>').addClass('bhg-scroll-' + scroll)
 					if (height) {
@@ -335,7 +300,13 @@
 					return table.append(thead);
 				}
 
-
+				function renderScheduleData() {
+					var table = $('<table></table>');
+					for (i=0; i<g.data.length; i++) {
+						table.append($('<tr><td><div>' + g.data[i] +'</div></td></tr>'));
+					}
+					return table;
+				}
 
 				g.render = function() {
 					content = $('<div></div>').addClass('bhg')
@@ -343,26 +314,50 @@
 					var table = $('<table></table>');
 					var thead = $('<thead></thead>').addClass('bhg-head')
 						.append($('<tr></tr>').css('height', '40px')
-							.append($('<td></td>').addClass('bhg-left').append(renderPane('none', null, null, renderResourceHeader())))
+							.append($('<td></td>').addClass('bhg-left').append(renderPane('none', null, null, false, renderResourceHeader())))
 							.append($('<td></td>').addClass('bhg-divider'))
-							.append($('<td></td>').addClass('bhg-content-x').append(renderPane('x', 1000, null, renderScheduleHeader())))
+							.append($('<td></td>').addClass('bhg-content-x').append(renderPane('x', 1000, null, false, renderScheduleHeader())))
 						);
 					table.append(thead);
 
 					var tbody = $('<tbody></tbody>').addClass('bhg-body')
 						.append($('<tr></tr>')
-							.append($('<td></td>').addClass('bhg-left').append(renderPane('y', null, 100, renderResourceData())))
+							.append($('<td></td>').addClass('bhg-left').append(renderPane('y', null, 100, false, renderResourceData())))
 							.append($('<td></td>').addClass('bhg-divider'))
-							.append($('<td></td>').addClass('bhg-content-x'))
+							.append($('<td></td>').addClass('bhg-content-x').append(renderPane('both', 1000, 100, true, renderScheduleData())))
 						);
 					table.append(tbody);
 
 					content.append(table);
 
-					// content.append(renderTimebar)
 					element.append(content);
 
+
+					// Events
+					// ------
+
+					// Scroll resouces
+					tbody.find('.bhg-scroll-y').scroll(function () {
+						// var t = $(this).scrollTop();
+						tbody.find('.bhg-scroll-both').scrollTop( $(this).scrollTop() );
+					});
+
+					// Scroll schedule
+					tbody.find('.bhg-scroll-both').scroll(function () {
+						var t = $(this).scrollTop();
+						var l = $(this).scrollLeft();
+
+						// console.log("scroll - top: " + t + ", left: " + l);
+
+						// Scroll the related panes
+						thead.find('.bhg-scroll-x').scrollLeft(l);
+						tbody.find('.bhg-scroll-y').scrollTop(t);
+
+					});
+
 				};
+
+
 			}
 
 
@@ -448,17 +443,17 @@
 
 
 		$(function() {
-			$(".bhg-scroll-both").scroll(function () {
+			$("#sample .bhg-scroll-both").scroll(function () {
 				// alert('scroll');
 				// console.log("Scroll");
-				var t = $(".bhg-scroll-both").scrollTop();
-				var l = $(".bhg-scroll-both").scrollLeft();
+				var t = $("#sample .bhg-scroll-both").scrollTop();
+				var l = $("#sample .bhg-scroll-both").scrollLeft();
 
 				// console.log("scroll - top: " + t + ", left: " + l);
 
 				// Scroll the related panes
-				$(".bhg-scroll-y").scrollTop($(".bhg-scroll-both").scrollTop());
-				$(".bhg-scroll-x").scrollLeft($(".bhg-scroll-both").scrollLeft());
+				$("#sample .bhg-scroll-y").scrollTop($("#sample .bhg-scroll-both").scrollTop());
+				$("#sample .bhg-scroll-x").scrollLeft($("#sample .bhg-scroll-both").scrollLeft());
 
 				// if (last_horizonal_position < l && l > 6 * col_width) {				// Must have space between left and right scrolling
 				// 	// scroll right
