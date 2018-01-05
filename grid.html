@@ -1,5 +1,8 @@
+<!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<style >
 			* {
@@ -207,12 +210,155 @@
 			<button id="add-cols">Add column</button>
 		</div>
  -->
+ 		<p>Vue</p>
+		<div id="app">
+			<p>{{ message }}</p>
 
-		<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>		
+			<div id='vue-grid' class="bhg bhg-container">
+				<table>
+					<thead class="bhg-head" >
+						<tr style="height: 40px;">
+							<td class="bhg-left">
+								<div class="bhg-pane">
+									<div class="bhg-scroll-none">
+										<div class="bhg-pane-inner">
+											<div class="bhg-content">
+												<div class="bhg-resource-header">{{message}}</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</td>
+							<td class="bhg-divider"></td>
+							<td class="bhg-content-x">
+								<div class="bhg-pane">
+									<div id="vue-grid-header" class="bhg-scroll-x">
+										<div class="bhg-pane-inner" style="width:1000px;">
+											<div class="bhg-content">
+												<table class="bhg-schedule-header">
+													<tbody>
+														<tr>
+															<th><div>1</div></th>
+															<th><div>2</div></th>
+															<th><div>3</div></th>
+															<th><div>4</div></th>
+															<th><div>5</div></th>
+															<th><div>6</div></th>
+															<th><div>7</div></th>
+															<th><div>8</div></th>
+															<th><div>9</div></th>
+															<th><div>10</div></th>
+															<th><div>11</div></th>
+															<th><div>12</div></th>
+															<th><div>13</div></th>
+															<th><div>14</div></th>
+															<th><div>15</div></th>
+															<th><div>16</div></th>
+															<th><div>17</div></th>
+															<th><div>18</div></th>
+															<th><div>19</div></th>
+															<th><div>20</div></th>
+															<th><div>21</div></th>
+															<th><div>22</div></th>
+															<th><div>23</div></th>
+															<th><div>24</div></th>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</thead>
+					<tbody class="bhg-body" >
+						<tr>
+							<td class="bhg-left">
+								<div class="bhg-pane">
+									<div id="vue-grid-left" class="bhg-scroll-y" style="height: 100px;" >
+										<div class="bhg-pane-inner">
+											<div class="bhg-content">
+												<table>
+													<tbody>
+														<tr v-for="r in resources">
+															<td><div>{{r.name}}</div></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</td>
+							<td class="bhg-divider"></td>
+							<td class="bhg-content-x">
+								<div class="bhg-pane">
+									<div id="test" class="bhg-scroll-both" style="height: 100px;" v-on:scroll="scrollSchedule($event)">
+										<div class="bhg-pane-inner" style="width: 1000px;">
+											<div class="bhg-content">
+												<table>
+													<tbody>
+														<tr v-for="r in resources">
+															<td><div>{{r.name}}</div></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+											<div class="bhg-bg">
+												<table class="bhg-bg-grid">
+													<tbody>
+														<tr>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+															<td><div></div></td>
+														</tr>
+													</tbody>
+												</table>
+
+											</div>
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+		</div>
+
+		<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+		<script src="https://unpkg.com/vue"></script>
 		<script type="text/javascript">
 
+
 		(function($) {
+
+
+
 			var defaults = {
 				numberOfDays: 7,
 				numberOfSlotsPerDay: 2
@@ -289,14 +435,14 @@
 
 					    var h = g.today;
 					    for(j=0; j<g.options.numberOfSlotsPerDay; j++) {
-							tr2.append($('<td><div></div></tr>').text(h.format('HH:mm')));					    	
+							tr2.append($('<td><div></div></tr>').text(h.format('HH:mm')));
 							h.add(minutesPerSlot, 'minutes');
 					    }
 
 					    d.add(1, 'days');
 					}
 					thead.append(tr1).append(tr2);
-					
+
 					return table.append(thead);
 				}
 
@@ -364,7 +510,7 @@
 			$.fn.grid = function(options) {
 				// var settings = $extend({}, defaults, options);
 				var result = this; // what this function will return (this jQuery object by default)
-				
+
 
 				this.each(function(i, _element) { // loop each DOM element involved
 					var element = $(_element);
@@ -374,7 +520,7 @@
 		// 			// a method call
 					if (typeof options === 'string') {
 		// 				if (grid && $.isFunction(calendar[options])) {
-		// 					var args = Array.prototype.slice.call(arguments, 1); // for a possible method call							
+		// 					var args = Array.prototype.slice.call(arguments, 1); // for a possible method call
 		// 					// singleRes = calendar[options].apply(calendar, args);
 		// 					// if (!i) {
 		// 					// 	res = singleRes; // record the first method call result
@@ -391,7 +537,7 @@
 						grid.render();
 					}
 				});
-				
+
 				return result;
 
 			};
@@ -471,9 +617,59 @@
 				add_first_column();
 			})
 
-			$("#the-grid").grid();
+			// $("#the-grid").grid();
+
+			new Vue({
+				el: '#app',
+			  	data: {
+			    	message: 'Hello Vue.js!',
+					numberOfDays: 7,
+					numberOfSlotsPerDay: 2,
+					resources: [
+						{name: 'one'},
+						{name: 'two'},
+						{name: 'three'},
+						{name: 'four'},
+						{name: 'five'},
+					]
+				},
+				methods: {
+					scrollSchedule (event) {
+						console.log('got scrolling')
+
+						if (event) {
+							// debugger
+							var top = event.target.scrollTop
+							var left = event.target.scrollLeft
+
+							// console.log(event.target.scrollTop)
+
+							document.getElementById("vue-grid-left").scrollTop = top
+							document.getElementById("vue-grid-header").scrollLeft = left
+
+
+				      	}
+
+						// var t = $this.scrollTop()
+						// alert('scroll');
+						// console.log("Scroll");
+						// var t = $("#sample .bhg-scroll-both").scrollTop();
+						// var l = $("#sample .bhg-scroll-both").scrollLeft();
+                        //
+						// // console.log("scroll - top: " + t + ", left: " + l);
+                        //
+						// // Scroll the related panes
+						// $("#sample .bhg-scroll-y").scrollTop($("#sample .bhg-scroll-both").scrollTop());
+						// $("#sample .bhg-scroll-x").scrollLeft($("#sample .bhg-scroll-both").scrollLeft());
+
+
+					}
+				}
+			})
+
 
 		});
+
 
 
 		</script>
