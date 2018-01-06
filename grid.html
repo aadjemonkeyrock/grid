@@ -21,35 +21,85 @@
 		.bhg table {width: 100%; font-size: 1em; border-collapse: collapse; table-layout: fixed; border-spacing: 0; position: relative;}
 		.bhg table td, .bhg table th {border-style: solid; border-width: 1px; border-color: #ddd; padding: 0; vertical-align: top; white-space: nowrap;}
 
-		.bhg-container {width: 600px; height: 200px; position: relative;}
+		.bhg-container {
+			/* width: 600px;  */
+			height: 200px;
+			position: relative;
+		}
 		.bhg-pane, .bhg-pane-inner {overflow: hidden; position: relative;}
 		.bhg-pane {z-index: 1;}
 		.bhg-pane-inner {min-height: 100%; margin:0px; }
 		.bhg-pane-inner .bhg-content {margin: -1px;}
 
-		.bhg-scroll-x {overflow-x: scroll; overflow-y: hidden; margin: 0; height: 40px;}
+		.bhg-scroll-x {
+			/* overflow-x: scroll; */
+			overflow-x: -moz-hidden-unscrollable;
+			overflow-y: hidden;
+			margin: 0;
+			/* height: 40px; */
+			-ms-overflow-style: none;  // IE 10+
+		    /* overflow: -moz-scrollbars-none;  // Firefox */
+		}
+		/* -webkit-scrollbar { display: none;  */
+		/* .container {
+		    -ms-overflow-style: none;  // IE 10+
+		    overflow: -moz-scrollbars-none;  // Firefox
+		} */
+		.bhg-scroll-x::-webkit-scrollbar {
+		    display: none;  // Safari and Chrome
+		}
+
+
 		.bhg-scroll-y {overflow-x: hidden; overflow-y: scroll; margin: 0px -15px 0px 0px;}
 		.bhg-scroll-none {overflow: hidden; margin:0;}
 		.bhg-scroll-both {overflow: scroll; margin:0;}
 
-		.bhg-head .bhg-pane {height: 36px;}
+		.bhg-head .bhg-pane {height: 49px;}
 
 		.bhg-left {width: 200px;}
 		.bhg-spacer {height: 15px;}
 		.bhg-divider {width: 5px; background-color: #f2f2f2;}
 		.bhg-content {z-index: 2; margin: -1px;}
-		.bhg-content td div {height: 24px; padding: 3px 5px;}
+		/* .bhg-content td div {height: 24px; padding: 3px 5px;} */
 
-		.bhg-resource-header {height: 24px; padding: 3px 5px;}
-		.bhg-schedule-header {height: 26px;}
-		.bhg-schedule-header th {width: 40px;}
-		.bhg-schedule-header th div {padding: 3px 5px;}
+		/* .bhg-resource-header {height: 24px; padding: 3px 5px;} */
+
+		table.bhg-resource-content td {height: 24px; padding: 3px;}
+
+		table.bhg-schedule-header tr.days td {height: 26px; padding: 4px; text-align: center;}
+		table.bhg-schedule-header tr.times td {height: 24px; font-size: 70%; padding: 3px; line-height: 16px;}
+
+		table.bhg-schedule-content td {height: 24px; padding: 3px;}
+
+		table.bhg-schedule-content td div.slot {
+			position: absolute;
+			top: 1px;
+			height: 23px;
+			background-color: blue;
+			color: white;
+			text-align: center;
+			font-size: 80%;
+			padding: 3px;
+			line-height: 18px;
+			z-index: 3;
+			border-radius: 4px;
+		}
+
+		/* .bhg-schedule-header th {width: 40px;} */
+		/* .bhg-schedule-header th div {padding: 3px 5px;} */
 
 		.bhg-bg {position: absolute; z-index: 1; left: 0; top: 0; bottom:0; margin: -1px; }
 		.bhg-bg-grid {height: 100%;}
-		.bhg-bg-grid  td {width: 40px;}
+		/* .bhg-bg-grid  td {width: 40px;} */
 
-		.bhg-time {width: 40px;}
+		/* td.resource-header {height: 24px; padding: 3px 5px;}
+		td.schedule-header-date {height: 26px;}
+		td.schedule-header-time {height: 22px;} */
+
+		/* td.resource {}
+		td.content {} */
+
+		/* .bhg-time {width: 40px;} */
 		</style>
 
 
@@ -217,7 +267,7 @@
 			<div id='vue-grid' class="bhg bhg-container">
 				<table>
 					<thead class="bhg-head" >
-						<tr style="height: 40px;">
+						<tr style="height: 50px;">
 							<td class="bhg-left">
 								<div class="bhg-pane">
 									<div class="bhg-scroll-none">
@@ -232,36 +282,16 @@
 							<td class="bhg-divider"></td>
 							<td class="bhg-content-x">
 								<div class="bhg-pane">
-									<div id="vue-grid-header" class="bhg-scroll-x">
-										<div class="bhg-pane-inner" style="width:1000px;">
+									<div id="vue-grid-header" class="bhg-scroll-x" v-on:scroll="scrollHeader($event)">
+										<div class="bhg-pane-inner" :style="{ width: width + 'px' }">
 											<div class="bhg-content">
 												<table class="bhg-schedule-header">
 													<tbody>
-														<tr>
-															<th><div>1</div></th>
-															<th><div>2</div></th>
-															<th><div>3</div></th>
-															<th><div>4</div></th>
-															<th><div>5</div></th>
-															<th><div>6</div></th>
-															<th><div>7</div></th>
-															<th><div>8</div></th>
-															<th><div>9</div></th>
-															<th><div>10</div></th>
-															<th><div>11</div></th>
-															<th><div>12</div></th>
-															<th><div>13</div></th>
-															<th><div>14</div></th>
-															<th><div>15</div></th>
-															<th><div>16</div></th>
-															<th><div>17</div></th>
-															<th><div>18</div></th>
-															<th><div>19</div></th>
-															<th><div>20</div></th>
-															<th><div>21</div></th>
-															<th><div>22</div></th>
-															<th><div>23</div></th>
-															<th><div>24</div></th>
+														<tr class="days">
+															<td :colspan="numberOfSlotsPerDay" v-for="d in days">{{ d.label }}</td>
+														</tr>
+														<tr class="times">
+															<td v-for="t in times">{{ t }}</td>
 														</tr>
 													</tbody>
 												</table>
@@ -276,13 +306,13 @@
 						<tr>
 							<td class="bhg-left">
 								<div class="bhg-pane">
-									<div id="vue-grid-left" class="bhg-scroll-y" style="height: 100px;" >
+									<div id="vue-grid-left" class="bhg-scroll-y" style="height: 100px;" v-on:scroll="scrollLeft($event)">
 										<div class="bhg-pane-inner">
 											<div class="bhg-content">
-												<table>
+												<table class="bhg-resource-content">
 													<tbody>
 														<tr v-for="r in resources">
-															<td><div>{{r.name}}</div></td>
+															<td>{{r.name}}</td>
 														</tr>
 													</tbody>
 												</table>
@@ -294,49 +324,27 @@
 							<td class="bhg-divider"></td>
 							<td class="bhg-content-x">
 								<div class="bhg-pane">
-									<div id="test" class="bhg-scroll-both" style="height: 100px;" v-on:scroll="scrollSchedule($event)">
-										<div class="bhg-pane-inner" style="width: 1000px;">
-											<div class="bhg-content">
-												<table>
-													<tbody>
-														<tr v-for="r in resources">
-															<td><div>{{r.name}}</div></td>
-														</tr>
-													</tbody>
-												</table>
-											</div>
+									<div id="vue-grid-content" class="bhg-scroll-both" style="height: 100px;" v-on:scroll.passive="scrollContent($event)">
+										<div class="bhg-pane-inner" :style="{ width: width + 'px' }">
 											<div class="bhg-bg">
 												<table class="bhg-bg-grid">
 													<tbody>
 														<tr>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
-															<td><div></div></td>
+															<td v-for="c in cols"></th>
 														</tr>
 													</tbody>
 												</table>
-
+											</div>
+											<div class="bhg-content">
+												<table class="bhg-schedule-content">
+													<tbody>
+														<tr v-for="r in resources">
+															<td>
+																<div class="slot" style="left: 20px; width: 100px;" v-for="s in r.slots">{{s.start}} - {{s.end}}</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
 											</div>
 										</div>
 									</div>
@@ -624,45 +632,72 @@
 			  	data: {
 			    	message: 'Hello Vue.js!',
 					numberOfDays: 7,
-					numberOfSlotsPerDay: 2,
+					numberOfSlotsPerDay: 4,
+					date_from: moment({year: 2018, month: 0, day: 7}),
+					time_from: 240,		// 04:00 In minutes
+					time_until: 1200,	// 20:00
+					width: 1200,
 					resources: [
-						{name: 'one'},
-						{name: 'two'},
-						{name: 'three'},
-						{name: 'four'},
-						{name: 'five'},
+						{name: 'one', slots: []},
+						{name: 'two', slots: [
+							{start: 480, end: 840}
+						]},
+						{name: 'three', slots: []},
+						{name: 'four', slots: []},
+						{name: 'five', slots: []},
+						{name: 'six', slots: []},
+						{name: 'seven', slots: []},
+						{name: 'eight', slots: []},
+						{name: 'nine', slots: []},
+						{name: 'ten', slots: []},
 					]
 				},
+				computed: {
+					cols () {
+						return Array(this.numberOfDays*this.numberOfSlotsPerDay).fill(1)
+					},
+					days () {
+						var l = []
+						for(i=0; i<this.numberOfDays; i++){
+							var d = moment(this.date_from).add(i, 'days')
+							var day = {
+								label: d.format("DD-MM-YYYY"),
+								// times: []
+							}
+							l.push(day)
+						}
+						return l
+					},
+					times () {
+						var l = []
+						var minutesPerSlot = (this.time_until - this.time_from) / this.numberOfSlotsPerDay;
+						for(i=0; i<this.numberOfDays; i++){
+							var d = moment(this.date_from).add(this.time_from, 'minutes')
+						    for(j=0; j<this.numberOfSlotsPerDay; j++) {
+								l.push(d.format('HH:mm'))
+
+								d.add(minutesPerSlot, 'minutes');
+						    }
+						}
+						return l
+					}
+				},
 				methods: {
-					scrollSchedule (event) {
-						console.log('got scrolling')
-
+					scrollLeft (event) {
 						if (event) {
-							// debugger
-							var top = event.target.scrollTop
-							var left = event.target.scrollLeft
-
-							// console.log(event.target.scrollTop)
-
-							document.getElementById("vue-grid-left").scrollTop = top
-							document.getElementById("vue-grid-header").scrollLeft = left
-
-
+							document.getElementById("vue-grid-content").scrollTop = event.target.scrollTop
+						}
+					},
+					scrollHeader (event) {
+						if (event) {
+							document.getElementById("vue-grid-content").scrollLeft = event.target.scrollLeft
+						}
+					},
+					scrollContent (event) {
+						if (event) {
+							document.getElementById("vue-grid-left").scrollTop = event.target.scrollTop
+							document.getElementById("vue-grid-header").scrollLeft = event.target.scrollLeft
 				      	}
-
-						// var t = $this.scrollTop()
-						// alert('scroll');
-						// console.log("Scroll");
-						// var t = $("#sample .bhg-scroll-both").scrollTop();
-						// var l = $("#sample .bhg-scroll-both").scrollLeft();
-                        //
-						// // console.log("scroll - top: " + t + ", left: " + l);
-                        //
-						// // Scroll the related panes
-						// $("#sample .bhg-scroll-y").scrollTop($("#sample .bhg-scroll-both").scrollTop());
-						// $("#sample .bhg-scroll-x").scrollLeft($("#sample .bhg-scroll-both").scrollLeft());
-
-
 					}
 				}
 			})
