@@ -183,12 +183,10 @@
 														<!-- Totals -->
 														<tr class="totals">
 															<td :colspan="numberOfDays * numberOfSlotsPerDay">
-																<!-- <span>x</span> -->
-																<!-- <span v-for="t in totals()">{{t.count}}</span> -->
-																<div class="total" :style="{left: barLeft(t.start) + 'px', width: barWidth(t.start, t.until) + 'px'}" v-for="t in totals()">
+																<div class="total" :style="{left: t.left + 'px', width: t.width + 'px'}" v-for="t in totals">
                                                                     <span>{{t.count}}</span>
                                                                 </div>
-                                                                <div v-if="totals().length == 0">There are no totals</div>
+                                                                <!-- <div v-if="totals.length == 0">There are no totals</div> -->
 															</td>
 														</tr>
 													</tbody>
@@ -238,10 +236,14 @@
 													<tbody>
 														<tr v-for="r in resources">
 															<td>
-																<div class="slot" :style="{left: barLeft(s.start) + 'px', width: barWidth(s.start, s.until) + 'px'}" v-for="s in r.slots">
-                                                                    <span v-if="barWidth(s.start, s.until) >= 70">{{s.text}}</span>
+																<div class="slot" :style="{left: s.left + 'px', width: s.width + 'px'}" v-for="s in resourceSlots(r)">
+                                                                    <span v-if="s.width >= 70">{{s.text}}</span>
                                                                 </div>
-                                                                <div v-if="r.slots.length == 0"></div>
+
+																<!-- <div class="slot" :style="{left: barLeft(s.start) + 'px', width: barWidth(s.start, s.until) + 'px'}" v-for="s in r.slots">
+                                                                    <span v-if="barWidth(s.start, s.until) >= 70">{{s.text}}</span>
+                                                                </div> -->
+                                                                <!-- <div v-if="resourceSlots(r).length == 0"></div> -->
 															</td>
 														</tr>
 													</tbody>
@@ -277,18 +279,23 @@
 				resources: [
 					{name: 'one', slots: []},
 					{name: 'two', slots: [
-						{start: 480, until: 1020, text: '08:00 - 17:00'}
+						{date: '2018-01-07', start: 480, until: 1020, text: '08:00 - 17:00'},
+						{date: '2018-01-08', start: 480, until: 1020, text: '08:00 - 17:00'}
 					]},
-					{name: 'three', slots: []},
+					{name: 'three', slots: [
+						{date: '2018-01-06', start: 480, until: 1020, text: '08:00 - 17:00'}
+					]},
 					{name: 'four', slots: [
-                        {start: 360, until: 420, text: '06:00 - 07:00'},
-                        {start: 720, until: 750, text: '12:00 - 12:30'},
-                        {start: 870, until: 1105, text: '14:30 - 18:25'}
+                        {date: '2018-01-07', start: 360, until: 420, text: '06:00 - 07:00'},
+                        {date: '2018-01-08', start: 720, until: 750, text: '12:00 - 12:30'},
+                        {date: '2018-01-07', start: 870, until: 1105, text: '14:30 - 18:25'}
                     ]},
 					{name: 'five', slots: [
-						{start: 720, until: 780, text: '12:00 - 13:00'},
+						{date: '2018-01-07', start: 720, until: 780, text: '12:00 - 13:00'},
 					]},
-					{name: 'six', slots: []},
+					{name: 'six', slots: [
+						{date: '2018-01-10', start: 720, until: 780, text: '12:00 - 13:00'},
+					]},
 					{name: 'seven', slots: []},
 					{name: 'eight', slots: []},
 					{name: 'nine', slots: []},
@@ -343,6 +350,98 @@
 					    }
 					}
 					return l
+				},
+				totals() {
+					// Build list with totals slots
+					var i, j, k
+					var totalSlots = []
+
+					// Find a unique set of start/end times, each start or end time only exists once in the set
+					var timesPerDay = {}
+					for (i = 0; i < this.resources.length; i++) {
+						resource = this.resources[i]
+						for (j = 0; j < resource.slots.length; j++) {
+							slot = 	resource.slots[j]
+							date = slot.date
+
+							if (!(date in timesPerDay))	{ timesPerDay[date] = []}
+
+							var times = timesPerDay[date]
+
+							if (times.indexOf(slot.start) < 0) { times.push(slot.start)}
+							if (times.indexOf(slot.until) < 0) { times.push(slot.until)}
+						}
+					}
+					// Process per day
+					for (var day in timesPerDay) {
+						times = timesPerDay[day].sort(function(a, b){return a-b})
+
+						var date = moment(day)								// Date of this slot
+						var days = date.diff(this.date_from, 'days')   		// Days between start date
+						var offset = days * this.pixelsPerDay
+
+						if (days >= 0 && days <= this.numberOfDays-1) {		// Only slots in the date range
+							// Make pairs, and scan all the slots to find overlap to set the count
+							var prevCount = null
+							var slotStart
+							var slotUntil
+							var count = times.length
+							for (k = 0; k < count; k++) {   // Scan all the slots, to find overlap
+		        				var slotUntil = times[k];
+
+								if (k > 0) {
+									slotCount = 0
+
+									// Scan all the resources
+									for (i = 0; i < this.resources.length; i++) {
+										resource = this.resources[i]
+
+										var resourceCount = 0
+										// Presence
+										for (j = 0; j < resource.slots.length; j++) {
+											slot = 	resource.slots[j]
+											// Only slots for today
+											if (slot.date == day && (slot.start <= slotStart && slot.until >= slotUntil)) {
+												resourceCount = 1
+											}
+										}
+										// Absence, not yet implemented
+										if (resourceCount > 0) {
+
+										}
+										slotCount += resourceCount
+									}
+									// Check if this is a slot to keep
+									if (slotCount > 0) {
+										// Check if we need to merge with the previous
+										if(prevCount && prevCount.slotCount == slotCount) {
+											// Update the previous
+											prevCount.with += this.barWidth(slotStart, slotUntil)
+										}
+										else {
+											// Create a new totals slots
+											totalSlot = {
+												left: offset + this.barLeft(slotStart),
+												width: this.barWidth(slotStart, slotUntil),
+												count: slotCount
+											}
+											// Keep in list
+											totalSlots.push(totalSlot)
+
+											// Keep for next round
+											prevCount = totalSlot
+										}
+									}
+									else {
+										prevCount = null
+									}
+								}
+								// Keep previous for later
+								slotStart = slotUntil
+							}
+						}
+					}
+					return totalSlots
 				}
 			},
 			methods: {
@@ -380,97 +479,29 @@
                     var duration = until_minute - start_minute
                     return duration / this.minutesPerPixel
                 },
-				totals() {
-					// Build list with totals slots
-					// Right now everything is still for a single day
-					var i, j, k
-					var totalCounts = []
-
-					// Find a unique set of start/end times, each start or end time only exists once in the set
-					var times = []
-					for (i = 0; i < this.resources.length; i++) {
-						resource = this.resources[i]
-						for (j = 0; j < resource.slots.length; j++) {
-							slot = 	resource.slots[j]
-							// console.log('start: ' + slot.start + ', until: ' + slot.until)
-							// console.log(times.indexOf(slot.start))
-							if (times.indexOf(slot.start) < 0) { times.push(slot.start)}
-							// console.log(times.indexOf(slot.until))
-							if (times.indexOf(slot.until) < 0) { times.push(slot.until)}
+				resourceSlots(resource) {
+					l = []
+					// console.log(resource.name)
+					for (j = 0; j < resource.slots.length; j++) {
+						s = resource.slots[j]
+						var date = moment(s.date)						// Date of this slot
+						var days = date.diff(this.date_from, 'days')   	// Days between start date
+						var offset = days * this.pixelsPerDay
+						if (days >= 0 && days <= this.numberOfDays-1) {		// Only slots in the date range
+							slot = {
+								left: offset + this.barLeft(s.start),
+								width: this.barWidth(s.start, s.until),
+								text: s.text
+							}
+							l.push(slot)
 						}
 					}
-					times = times.sort(function(a, b){return a-b})
-					console.log(times)
-
-					// Make pairs, and scan all the slots to find overlap to set the count
-					var prevCount = null
-					var slotStart
-					var slotUntil
-					var count = times.length
-					for (k = 0; k < count; k++) {
-        				var slotUntil = times[k];
-
-						if (k > 0) {
-							// Scan all the slots, to find overlap
-							slotCount = 0
-
-							// Scan all the resources
-							for (i = 0; i < this.resources.length; i++) {
-								resource = this.resources[i]
-
-								var resourceCount = 0
-								// Presence
-								for (j = 0; j < resource.slots.length; j++) {
-									slot = 	resource.slots[j]
-
-									// start <= slotStart and end >= slotEnd
-									if (slot.start <= slotStart && slot.until >= slotUntil) {
-										resourceCount = 1
-									}
-								}
-								// Absence, not yet implemented
-								if (resourceCount > 0) {
-
-								}
-								slotCount += resourceCount
-							}
-							// Check if this is a slot to keep
-							if (slotCount > 0) {
-								// Check if we need to merge with the previous
-								if(prevCount && prevCount.slotCount == slotCount) {
-									// Update the previous
-									prevCount.until = slotUntil
-								}
-								else {
-									// Create a new totals slots
-									totalSlot = {
-										start: slotStart,
-										until: slotUntil,
-										count: slotCount
-									}
-									// Keep in list
-									totalCounts.push(totalSlot)
-
-									// Keep for next round
-									prevCount = totalSlot
-								}
-							}
-							else {
-								prevCount = null
-							}
-
-
-						}
-						// Keep previous for later
-						slotStart = slotUntil
-					}
-
-					return totalCounts
-				}
+					return l
+				},
 			},
 			mounted: function() {
-				totals = this.totals()
-				console.log(totals)
+				// totals = this.totals()
+				// console.log(totals)
 			}
 		})
 		</script>
