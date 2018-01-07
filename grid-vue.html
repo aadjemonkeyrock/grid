@@ -54,7 +54,7 @@
 		.bhg-scroll-none {overflow: hidden; margin:0;}
 		.bhg-scroll-both {overflow: scroll; margin:0;}
 
-		.bhg-head .bhg-pane {height: 49px;}
+		/* .bhg-head .bhg-pane {height: 49px;} */
 
 		.bhg-left {width: 200px;}
 		.bhg-spacer {height: 15px;}
@@ -64,14 +64,31 @@
 
 		div.bhg-resource-header {padding: 3px 5px;}
 
-		table.bhg-resource-content td {height: 24px; padding: 3px;}
+		table.bhg-resource-content td {height: 25px; padding: 3px;}
 
 		table.bhg-schedule-header tr.days td {height: 26px; padding: 4px; text-align: center;}
 		table.bhg-schedule-header tr.times td {height: 24px; font-size: 70%; padding: 3px; line-height: 16px;}
+		table.bhg-schedule-header tr.totals td {position: relative; height: 25px;}
+		table.bhg-schedule-header td div.total {
+			position: absolute;
+			top: 0px;
+			height: 24px;
+			background-color: green;
+			color: white;
+			text-align: center;
+			font-size: 80%;
+			padding: 3px;
+			line-height: 18px;
+			z-index: 3;
+			border-radius: 2px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+		}
 
 		table.bhg-schedule-content td {
             position: relative;
-            height: 24px;
+            height: 25px;
             padding: 3px;
             border-style: dotted;
         }
@@ -163,6 +180,17 @@
 														<tr class="times">
 															<td v-for="t in times">{{ t }}</td>
 														</tr>
+														<!-- Totals -->
+														<tr class="totals">
+															<td :colspan="numberOfDays * numberOfSlotsPerDay">
+																<!-- <span>x</span> -->
+																<!-- <span v-for="t in totals()">{{t.count}}</span> -->
+																<div class="total" :style="{left: barLeft(t.start) + 'px', width: barWidth(t.start, t.until) + 'px'}" v-for="t in totals()">
+                                                                    <span>{{t.count}}</span>
+                                                                </div>
+                                                                <div v-if="totals().length == 0">There are no totals</div>
+															</td>
+														</tr>
 													</tbody>
 												</table>
 											</div>
@@ -237,7 +265,7 @@
 		new Vue({
 			el: '#app',
 		  	data: {
-		    	message: 'Hello Vue.js!',
+		    	message: 'Hello Vue Grid!',
 				numberOfDays: 3,
 				numberOfSlotsPerDay: 8,
 				scrollHeight: 200,
@@ -257,7 +285,9 @@
                         {start: 720, until: 750, text: '12:00 - 12:30'},
                         {start: 870, until: 1105, text: '14:30 - 18:25'}
                     ]},
-					{name: 'five', slots: []},
+					{name: 'five', slots: [
+						{start: 720, until: 780, text: '12:00 - 13:00'},
+					]},
 					{name: 'six', slots: []},
 					{name: 'seven', slots: []},
 					{name: 'eight', slots: []},
@@ -268,7 +298,7 @@
 			computed: {
 				height() {
 					if(this.scrollHeight == 0) {
-						return this.resources.length * 24
+						return this.resources.length * 25
 					}
 					else {
 						return this.scrollHeight
@@ -349,7 +379,98 @@
                     var until_minute = until < this.day_until ? until : this.day_until
                     var duration = until_minute - start_minute
                     return duration / this.minutesPerPixel
-                }
+                },
+				totals() {
+					// Build list with totals slots
+					// Right now everything is still for a single day
+					var i, j, k
+					var totalCounts = []
+
+					// Find a unique set of start/end times, each start or end time only exists once in the set
+					var times = []
+					for (i = 0; i < this.resources.length; i++) {
+						resource = this.resources[i]
+						for (j = 0; j < resource.slots.length; j++) {
+							slot = 	resource.slots[j]
+							// console.log('start: ' + slot.start + ', until: ' + slot.until)
+							// console.log(times.indexOf(slot.start))
+							if (times.indexOf(slot.start) < 0) { times.push(slot.start)}
+							// console.log(times.indexOf(slot.until))
+							if (times.indexOf(slot.until) < 0) { times.push(slot.until)}
+						}
+					}
+					times = times.sort(function(a, b){return a-b})
+					console.log(times)
+
+					// Make pairs, and scan all the slots to find overlap to set the count
+					var prevCount = null
+					var slotStart
+					var slotUntil
+					var count = times.length
+					for (k = 0; k < count; k++) {
+        				var slotUntil = times[k];
+
+						if (k > 0) {
+							// Scan all the slots, to find overlap
+							slotCount = 0
+
+							// Scan all the resources
+							for (i = 0; i < this.resources.length; i++) {
+								resource = this.resources[i]
+
+								var resourceCount = 0
+								// Presence
+								for (j = 0; j < resource.slots.length; j++) {
+									slot = 	resource.slots[j]
+
+									// start <= slotStart and end >= slotEnd
+									if (slot.start <= slotStart && slot.until >= slotUntil) {
+										resourceCount = 1
+									}
+								}
+								// Absence, not yet implemented
+								if (resourceCount > 0) {
+
+								}
+								slotCount += resourceCount
+							}
+							// Check if this is a slot to keep
+							if (slotCount > 0) {
+								// Check if we need to merge with the previous
+								if(prevCount && prevCount.slotCount == slotCount) {
+									// Update the previous
+									prevCount.until = slotUntil
+								}
+								else {
+									// Create a new totals slots
+									totalSlot = {
+										start: slotStart,
+										until: slotUntil,
+										count: slotCount
+									}
+									// Keep in list
+									totalCounts.push(totalSlot)
+
+									// Keep for next round
+									prevCount = totalSlot
+								}
+							}
+							else {
+								prevCount = null
+							}
+
+
+						}
+						// Keep previous for later
+						slotStart = slotUntil
+					}
+
+					return totalCounts
+				}
+			},
+			mounted: function() {
+				totals = this.totals()
+				console.log(totals)
 			}
 		})
 		</script>
